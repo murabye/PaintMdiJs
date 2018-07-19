@@ -1,14 +1,4 @@
 var DragManager = new function() {
-
-    /**
-     * составной объект для хранения информации о переносе:
-     * {
-   *   elem - элемент, на котором была зажата мышь
-   *   avatar - аватар
-   *   downX/downY - координаты, на которых был mousedown
-   *   shiftX/shiftY - относительный сдвиг курсора от угла элемента
-   * }
-     */
     var dragObject = {};
 
     var self = this;
@@ -23,7 +13,6 @@ var DragManager = new function() {
 
         dragObject.elem = elem;
 
-        // запомним, что элемент нажат на текущих координатах pageX/pageY
         dragObject.downX = e.pageX;
         dragObject.downY = e.pageY;
 
@@ -31,36 +20,28 @@ var DragManager = new function() {
     }
 
     function onMouseMove(e) {
-        if (!dragObject.elem) return; // элемент не зажат
+        if (!dragObject.elem) return;
 
-        if (!dragObject.avatar) { // если перенос не начат...
+        if (!dragObject.avatar) {
             var moveX = e.pageX - dragObject.downX;
             var moveY = e.pageY - dragObject.downY;
 
-            // если мышь передвинулась в нажатом состоянии недостаточно далеко
             if (Math.abs(moveX) < 3 && Math.abs(moveY) < 3) {
                 return;
             }
 
-            // начинаем перенос
-            dragObject.avatar = createAvatar(e); // создать аватар
-            if (!dragObject.avatar) { // отмена переноса, нельзя "захватить" за эту часть элемента
+            dragObject.avatar = createAvatar(e);
+            if (!dragObject.avatar) {
                 dragObject = {};
                 return;
             }
 
-            // аватар создан успешно
-            // создать вспомогательные свойства shiftX/shiftY
             var coords = getCoords(dragObject.avatar);
             dragObject.shiftX = dragObject.downX - coords.left;
             dragObject.shiftY = dragObject.downY - coords.top;
 
-            startDrag(e); // отобразить начало переноса
+            startDrag(e);
         }
-
-        // отобразить перенос объекта при каждом движении мыши
-        // некрасивая проверка на то, вылезло ли это дело за границы
-        // зато не заедает
         if (e.pageX - dragObject.shiftX < 0)
             dragObject.avatar.style.left = '0px';
         else if (e.pageX - dragObject.shiftX + dragObject.avatar.offsetWidth > document.body.offsetWidth)
@@ -79,12 +60,10 @@ var DragManager = new function() {
     }
 
     function onMouseUp(e) {
-        if (dragObject.avatar) { // если перенос идет
+        if (dragObject.avatar) {
             finishDrag(e);
         }
 
-        // перенос либо не начинался, либо завершился
-        // в любом случае очистим "состояние переноса" dragObject
         dragObject = {};
     }
 
@@ -99,8 +78,6 @@ var DragManager = new function() {
     }
 
     function createAvatar(e) {
-
-        // запомнить старые свойства, чтобы вернуться к ним при отмене переноса
         var avatar = dragObject.elem;
         var old = {
             parent: avatar.parentNode,
@@ -111,7 +88,6 @@ var DragManager = new function() {
             zIndex: avatar.zIndex || ''
         };
 
-        // функция для отмены переноса
         avatar.rollback = function() {
             old.parent.insertBefore(avatar, old.nextSibling);
             avatar.style.position = old.position;
@@ -126,24 +102,19 @@ var DragManager = new function() {
     function startDrag(e) {
         var avatar = dragObject.avatar;
 
-        // инициировать начало переноса
         document.body.appendChild(avatar);
         avatar.style.zIndex = 999;
         avatar.style.position = 'absolute';
     }
 
     function findDroppable(event) {
-        // спрячем переносимый элемент
         dragObject.avatar.hidden = true;
 
-        // получить самый вложенный элемент под курсором мыши
         var elem = document.elementFromPoint(event.clientX, event.clientY);
 
-        // показать переносимый элемент обратно
         dragObject.avatar.hidden = false;
 
         if (elem == null) {
-            // такое возможно, если курсор мыши "вылетел" за границу окна
             return null;
         }
 
@@ -160,7 +131,7 @@ var DragManager = new function() {
 };
 
 
-function getCoords(elem) { // кроме IE8-
+function getCoords(elem) {
     var box = elem.getBoundingClientRect();
 
     return {

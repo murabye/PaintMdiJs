@@ -1,10 +1,12 @@
 var menus = document.getElementsByClassName('dropdown-menu');
-var curMenu = menus[0].getElementsByTagName('a');       // файл
+var curMenu = menus[0].getElementsByTagName('a');
 curMenu[0].onclick = createCanvas;
 curMenu[1].onclick = save;
 curMenu[2].onclick = clear;
+curMenu[3].onclick = saveLocal;
+curMenu[4].onclick = openLocal;
 
-curMenu = menus[1].getElementsByTagName('a');           // фильтры
+curMenu = menus[1].getElementsByTagName('a');
 curMenu[0].onclick = embossFilter;
 curMenu[1].onclick = sharpenFilter;
 curMenu[2].onclick = edgesFilter;
@@ -14,33 +16,23 @@ curMenu[5].onclick = rotateRight;
 curMenu[6].onclick = flipH;
 curMenu[7].onclick = flipV;
 
-curMenu = menus[2].getElementsByTagName('a');           // окна
+curMenu = menus[2].getElementsByTagName('a');
 curMenu[0].onclick = vertically;
 curMenu[1].onclick = horizontally;
 curMenu[2].onclick = cascady;
 
-menus = document.querySelector('.tools');               // инструменты
+menus = document.querySelector('.tools');
 curMenu = menus.getElementsByTagName('button');
-curMenu[0].onclick = function () {              // выбор инструмента кисть
-    toolOptions.drawTool = drawBrush;
-};
-curMenu[1].onclick = function () {
-    toolOptions.drawTool = drawErase;           // выбор инструмента ластик
-};
-curMenu[2].onclick = function () {
-    toolOptions.drawTool = drawStar;
-};
-curMenu[3].onclick = function () {
-    toolOptions.drawTool = drawLine;
-};
-curMenu[4].onclick = function () {
-    toolOptions.drawTool = drawCircle;
-};
+curMenu[0].onclick = function () {toolOptions.drawTool = drawBrush;};
+curMenu[1].onclick = function () {toolOptions.drawTool = drawErase;};
+curMenu[2].onclick = function () {toolOptions.drawTool = drawStar;};
+curMenu[3].onclick = function () {toolOptions.drawTool = drawLine;};
+curMenu[4].onclick = function () {toolOptions.drawTool = drawCircle;};
 curMenu[5].onclick = zoomPlus;
 curMenu[6].onclick = zoomMinus;
 curMenu[7].onclick = zoomNormalize;
 
-var downloader = document.forms[0].elements[0];         // загрузка из файла
+var downloader = document.forms[0].elements[0];
 downloader.onchange = function () {
     if (!downloader.files) return;
     if (downloader.files.length === 0) return;
@@ -50,12 +42,10 @@ downloader.onchange = function () {
     });
     reader.readAsDataURL(downloader.files[0]);
 };
-curMenu = document.forms[1].elements[0];
-curMenu.onchange = function () {                // выбор цвета
+document.forms[1].elements[0].onchange = function (event) {
     toolOptions.color = event.currentTarget.value;
 };
-curMenu = document.forms[1].elements[1];
-curMenu.onchange = function () {                // выбор толщины
+curMenu = document.forms[1].elements[1].onchange = function (event) {
     if (isNumeric(event.currentTarget.value) && (+event.currentTarget.value > 0))
         toolOptions.width = +event.currentTarget.value;
 };
@@ -95,7 +85,7 @@ function drawBrush(canvas) {
     }
 
     cursorState.previousPoint={x:cursorState.currentPoint.x, y:cursorState.currentPoint.y};
-}               // кисть
+}    
 function drawErase(canvas) {
     scaleOption = 1;
     cursorState.lastCanvas = canvas;
@@ -112,7 +102,7 @@ function drawErase(canvas) {
     }
 
     cursorState.previousPoint={x:cursorState.currentPoint.x, y:cursorState.currentPoint.y};
-}               // ластик
+}          
 function drawStar(canvas) {
     cursorState.lastCanvas = canvas;
     scaleOption = 1;
@@ -153,7 +143,7 @@ function drawStar(canvas) {
     }
     ctx.stroke();
 
-}                // звезда
+}              
 function drawLine(canvas) {
     cursorState.lastCanvas = canvas;
     scaleOption = 1;
@@ -180,7 +170,7 @@ function drawLine(canvas) {
     ctx.lineTo(cursorState.currentPoint.x, cursorState.currentPoint.y);
 
     ctx.stroke();
-}                // линия
+}                
 function drawCircle(canvas) {
     cursorState.lastCanvas = canvas;
     scaleOption = 1;
@@ -223,7 +213,7 @@ function drawCircle(canvas) {
         centerX, centerY - valueY/2); // A1
 
     ctx.stroke();
-}              // эллипс
+}              
 
 function zoomPlus() {
     var canv = cursorState.lastCanvas;
@@ -293,6 +283,7 @@ function zoomNormalize() {
 
 }
 
+
 function createCanvas() {
     var userCanv = document.createElement('div');
     userCanv.className = 'draggable canvas-container';
@@ -323,7 +314,6 @@ function createCanvas() {
         e.currentTarget = innerCanvas;
         innerCanvas.onmousedown(e, innerCanvas);
     };
-
     helpCanvas.onmousemove = function (e) {
         e.currentTarget = innerCanvas;
         innerCanvas.onmousemove(e, innerCanvas);
@@ -332,13 +322,14 @@ function createCanvas() {
     userCanv.appendChild(helpCanvas);
 
     document.getElementsByClassName('application')[0].appendChild(userCanv);
-    var width = prompt('Ширина: ', 380);
-    var height = prompt('Высота: ', 318);
+
+    var width = prompt('Ширина: ', 100);
+    var height = prompt('Высота: ', 100);
 
     if (isNumeric(width) && isNumeric(height) && width > 0 && height > 0)
         setSize(helpCanvas, innerCanvas, width, height);
 
-}                  // создать холст
+}                  
 function loadImageURL(url) {
     var userCanv = document.createElement('div');
     userCanv.className = 'draggable canvas-container';
@@ -369,7 +360,6 @@ function loadImageURL(url) {
         e.currentTarget = innerCanvas;
         innerCanvas.onmousedown(e, innerCanvas);
     };
-
     helpCanvas.onmousemove = function (e) {
         e.currentTarget = innerCanvas;
         innerCanvas.onmousemove(e, innerCanvas);
@@ -387,22 +377,75 @@ function loadImageURL(url) {
         cx.drawImage(image, 0, 0);
     });
     image.src = url;
-}               // загрузить холст
+}               
 function closeCanvas(event) {
     var userCanv = event.currentTarget.parentNode.parentNode;
     userCanv.remove();
-}              // закрыть холст
+}              
 function save() {
     var dt = cursorState.lastCanvas.toDataURL();
     this.href = dt;
-}                          // сохранить холст
+}                          
 function clear() {
     scaleOption = 1;
     var canvas = cursorState.lastCanvas;
     var ctx = canvas.getContext('2d');
     ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-}                         // очистить холст
+}                         
+function saveLocal() {
+    var dataURL = cursorState.lastCanvas.toDataURL();
+    var base64 = dataURL.replace(/^data:image\/(png|jpg);base64,/, "");
+    localStorage.setItem('imageSaved', JSON.stringify(base64));
+}
+function openLocal() {
+    var dataImage = JSON.parse(localStorage.getItem('imageSaved'));
+
+    var userCanv = document.createElement('div');
+    userCanv.className = 'draggable canvas-container';
+    var handle = document.createElement('div');
+    handle.className = 'draghandle';
+
+    var closeIcon = document.createElement('span');
+    closeIcon.className = 'glyphicon glyphicon-remove closeCanvas';
+    closeIcon.onclick = closeCanvas;
+    handle.appendChild(closeIcon);
+    userCanv.appendChild(handle);
+
+    var innerCanvas = document.createElement('canvas');
+    innerCanvas.onmousedown = canvasDown;
+    innerCanvas.onmousemove = canvasMove;
+    innerCanvas.setAttribute('width','390');
+    innerCanvas.setAttribute('height','318');
+
+    userCanv.style.position = 'absolute';
+    userCanv.appendChild(innerCanvas);
+
+    var helpCanvas = document.createElement('canvas');
+    helpCanvas.setAttribute('width','390');
+    helpCanvas.setAttribute('height','318');
+    helpCanvas.style = "background-color: transparent;";
+
+    helpCanvas.onmousedown = function (e) {
+        e.currentTarget = innerCanvas;
+        innerCanvas.onmousedown(e, innerCanvas);
+    };
+    helpCanvas.onmousemove = function (e) {
+        e.currentTarget = innerCanvas;
+        innerCanvas.onmousemove(e, innerCanvas);
+    };
+
+    userCanv.appendChild(helpCanvas);
+    document.getElementsByClassName('application')[0].appendChild(userCanv);
+
+    var cx = innerCanvas.getContext('2d');
+    var image = document.createElement("img");
+    image.addEventListener("load", function() {
+        setSize(helpCanvas, innerCanvas, image.width, image.height);
+        cx.drawImage(image, 0, 0);
+    });
+    image.src =  "data:image/png;base64," + dataImage;
+}
 function setSize(helpCanvas, innerCanvas, width, height) {
     innerCanvas.parentElement.style.width = +width + 10 + 'px';
     innerCanvas.parentElement.style.height = +height + 31 + 'px';
@@ -416,7 +459,7 @@ function setSize(helpCanvas, innerCanvas, width, height) {
     helpCanvas.height = +height;
     helpCanvas.style.width = +width + 'px';
     helpCanvas.style.height = +height + 'px';
-}   // размер
+}   
 
 // обработчики кликов на холст
 document.body.onmouseup = function() {
@@ -448,9 +491,9 @@ function canvasMove(event, canvas) {
 }
 function setCoords(x,y) {
     cursorState.currentPoint = {x:x, y:y};
-}                   // смена координат
+}
 
-// фильтры
+
 function convolute(pixels, weights) {
     scaleOption = 1;
     var side = Math.round(Math.sqrt(weights.length));
@@ -608,7 +651,7 @@ function flipH() {
     ctx.clearRect(0,0,canv.width, canv.height);
 }
 
-// окна
+
 function vertically() {
     var canvases = document.getElementsByClassName('canvas-container');
     var top = 100;
